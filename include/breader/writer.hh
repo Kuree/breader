@@ -3,6 +3,7 @@
 
 #include <bit>
 #include <iostream>
+#include <vector>
 
 #include "endian.hh"
 
@@ -13,12 +14,24 @@ public:
     writer(std::ostream &stream, std::endian endian) : stream_(stream), endian_(endian) {}
 
     template <typename T>
-    void write(T value) {
+    requires(std::is_arithmetic_v<T>) void write(T value) {
         if (endian_ != std::endian::native) [[unlikely]] {
             value = endian::swap(value);
         }
         char *data = reinterpret_cast<char *>(&value);
         stream_.write(data, sizeof(T));
+    }
+
+    void write(const std::string &value) {
+        // if it's a unicode string, the endian might be an issue
+        stream_.write(value.data(), static_cast<int64_t>(value.size()));
+    }
+
+    template <typename T>
+    void write(const std::vector<T> &value) {
+        for (auto const v : value) {
+            this->template write<T>(v);
+        }
     }
 
     [[nodiscard]] uint64_t tellp() const { return stream_.tellp(); }

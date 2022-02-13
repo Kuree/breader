@@ -3,7 +3,6 @@
 #include "gtest/gtest.h"
 #include "io.hh"
 
-
 class IO_LE : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -138,4 +137,22 @@ TEST_F(IO_BE, double) {  // NOLINT
     auto value = reader()->read<double>();
     EXPECT_TRUE(value);
     EXPECT_EQ(*value, 42.0);
+}
+
+TEST_F(IO_LE, uint8_t_array) {  // NOLINT
+    std::vector<uint8_t> array = {0x41, 0x42, 0x43, 0x44};
+    writer->write(array);
+    auto value = reader()->read<uint8_t>(array.size());
+    EXPECT_TRUE(value);
+    for (auto i = 0u; i < array.size(); i++) {
+        EXPECT_EQ(array[i], (*value)[i]);
+    }
+}
+
+TEST_F(IO_LE, string) {   // NOLINT
+    std::string v = "42";
+    writer->write(v);
+    auto value = reader()->read<std::string>(v.size());
+    EXPECT_TRUE(value);
+    EXPECT_EQ(*value, v);
 }
