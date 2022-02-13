@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "io.hh"
+#include "util.hh"
 
 class IO_LE : public ::testing::Test {
 protected:
@@ -149,10 +150,26 @@ TEST_F(IO_LE, uint8_t_array) {  // NOLINT
     }
 }
 
-TEST_F(IO_LE, string) {   // NOLINT
+TEST_F(IO_LE, string) {  // NOLINT
     std::string v = "42";
     writer->write(v);
     auto value = reader()->read<std::string>(v.size());
     EXPECT_TRUE(value);
     EXPECT_EQ(*value, v);
+}
+
+TEST(IO, file) {  // NOLINT
+    auto temp = temp_directory();
+    {
+        breader::ofile o(temp.str());
+        auto w = o.get_writer();
+        w.write<uint64_t>(42);
+    }
+    {
+        breader::ifile i(temp.str());
+        auto r = i.get_reader();
+        auto value = r.read<uint64_t>();
+        EXPECT_TRUE(value);
+        EXPECT_EQ(*value, 42);
+    }
 }
