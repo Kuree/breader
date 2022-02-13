@@ -20,7 +20,7 @@ public:
     requires(std::is_arithmetic_v<T>) std::optional<T> read() {
         auto constexpr size = sizeof(T);
         if ((pos_ + size) > data_.size()) return std::nullopt;
-        T *ptr = reinterpret_cast<T *>(&data_[pos_]);
+        auto *ptr = reinterpret_cast<const T *>(&data_[pos_]);
         pos_ += size;
         if (endian_ == std::endian::native) [[likely]]
             return *ptr;
